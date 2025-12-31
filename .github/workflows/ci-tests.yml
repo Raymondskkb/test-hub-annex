@@ -23,7 +23,7 @@ jobs:
       - name: Wait for testHub test run to complete
         uses: peter-evans/workflow-run@v1
         with:
-          token: ${{ secrets.TH_TOKEN }}
+          token: ${{ secrets.TH_TOKEN_PAT }}
           repository: raymondskkb/test-hub
           workflow: "merchant-portal-ui-tests.yml"
           status: "success"
