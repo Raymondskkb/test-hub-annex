@@ -3,7 +3,9 @@ name: ci Tests - testHub
 on:
   push:
     branches: [ main ]
-
+  repository_dispatch:
+    types: [test-results]  # Listen for the test result notification from test-hub
+    
 jobs:
   trigger-tests:
     runs-on: ubuntu-latest
@@ -16,14 +18,17 @@ jobs:
           event-type: run-tests
           client-payload: '{"project":"merchant-portal-ui-tests"}'
 # Job to listen for the result of the triggered workflow run
-  wait-for-tests:
+  handle-test-result:
     runs-on: ubuntu-latest
     needs: trigger-tests
     steps:
-      - name: Wait for testHub test run to complete
-        uses: peter-evans/workflow-run@v1
-        with:
-          token: ${{ secrets.TH_TOKEN_PAT }}
-          repository: raymondskkb/test-hub
-          workflow: "merchant-portal-ui-tests.yml"
-          status: "success"
+      - name: Print test result
+        run: |
+          echo "Test Result: ${{ github.event.client_payload.status }}"  # Print test result (success or failure)
+          echo "Test Run URL: ${{ github.event.client_payload.run_url }}"  # Print the link to the test run
+
+      - name: Fail if tests failed
+        if: ${{ github.event.client_payload.status != 'success' }}  # If test status is not 'success', fail this job
+        run: |
+          echo "Tests failed! Check the details here: ${{ github.event.client_payload.run_url }}"
+          exit 1  # Fail the workflow
