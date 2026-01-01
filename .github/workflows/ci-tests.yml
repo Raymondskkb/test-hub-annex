@@ -24,11 +24,10 @@ jobs:
     steps:
       - name: Print test result
         run: |
-          echo "Test Result: ${{ github.event.client_payload.status }}"  # Print test result (success or failure)
-          echo "Test Run URL: ${{ github.event.client_payload.run_url }}"  # Print the link to the test run
-
+          echo "Test Result: ${{ github.event.client_payload.status }}"
+          echo "Test Run URL: ${{ github.event.client_payload.run_url }}"
       - name: Fail if tests failed
         if: ${{ github.event.client_payload.status != 'success' }}  # If test status is not 'success', fail this job
         run: |
           echo "Tests failed! Check the details here: ${{ github.event.client_payload.run_url }}"
-          exit 1  # Fail the workflow
+          exit 1
