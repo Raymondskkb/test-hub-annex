@@ -5,6 +5,7 @@ on:
     branches: [ main ]
   repository_dispatch:
     types: [ test-results ]
+  workflow_dispatch:
 
 jobs:
   trigger-tests:
