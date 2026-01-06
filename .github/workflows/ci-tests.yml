@@ -32,7 +32,22 @@ jobs:
       - name: Print test result
         run: |
           echo "Status: ${{ github.event.client_payload.status }}"
-          echo "Run URL: ${{ github.event.client_payload.run_url }}"
+          echo "Run:    ${{ github.event.client_payload.run_url }}"
+          echo ""
+          echo "🧪 View Playwright Report:"
+          echo "${{ github.event.client_payload.run_url }} (Artifacts → ${{ github.event.client_payload.artifact }})"
+
+      - name: Write test summary
+        run: |
+          {
+            echo "## 🧪 Merchant Portal UI Tests"
+            echo ""
+            echo "**Status:** ${{ github.event.client_payload.status }}"
+            echo ""
+            echo "🔗 **[View Playwright Report](${{ github.event.client_payload.run_url }})**"
+            echo ""
+            echo "_Open the run → Artifacts → **${{ github.event.client_payload.artifact }}**_"
+          } >> $GITHUB_STEP_SUMMARY
 
       - name: Fail if tests failed
         if: ${{ github.event.client_payload.status != 'success' }}
