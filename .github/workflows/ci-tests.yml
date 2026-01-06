@@ -4,30 +4,35 @@ on:
   push:
     branches: [ main ]
   repository_dispatch:
-    types: [test-results]  # Listen for the test result notification from test-hub
+    types: [ test-results ]
 
 jobs:
   trigger-tests:
+    if: github.event_name == 'push'
     runs-on: ubuntu-latest
     steps:
-      - name: Trigger testHub Workflow_Tests
+      - name: Trigger testHub Workflow
         uses: peter-evans/repository-dispatch@v3
         with:
           token: ${{ secrets.TH_TOKEN_PAT }}
           repository: raymondskkb/test-hub
           event-type: run-tests
-          client-payload: '{"project":"merchant-portal-ui-tests"}'
+          client-payload: |
+            {
+              "project": "merchant-portal-ui-tests",
+              "source_repo": "${{ github.repository }}",
+              "source_run_id": "${{ github.run_id }}"
+            }
 
   handle-test-result:
+    if: github.event_name == 'repository_dispatch' && github.event.action == 'test-results'
     runs-on: ubuntu-latest
-    if: ${{ github.event_name == 'repository_dispatch' && github.event.action == 'test-results' }}
     steps:
       - name: Print test result
         run: |
-          echo "Test Result: ${{ github.event.client_payload.status }}"
-          echo "Test Run URL: ${{ github.event.client_payload.run_url }}"
+          echo "Status: ${{ github.event.client_payload.status }}"
+          echo "Run URL: ${{ github.event.client_payload.run_url }}"
+
       - name: Fail if tests failed
-        if: ${{ github.event.client_payload.status != 'success' }}  # If test status is not 'success', fail this job
-        run: |
-          echo "Tests failed! Check the details here: ${{ github.event.client_payload.run_url }}"
-          exit 1
+        if: ${{ github.event.client_payload.status != 'success' }}
+        run: exit 1
